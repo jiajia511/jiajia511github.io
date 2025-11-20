@@ -2,15 +2,17 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="author" content="EVE">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/kGYP6CQw/6.png">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="copyright" content="2025 EVE">
     <meta name="application-name" content="EVEChat">
     <title>EVE Chat</title>
-    <link rel="manifest" href="data:application/json,{%22name%22:%22EVE%20Chat%22,%22short_name%22:%22EVE%20Chat%22,%22description%22:%22%E4%BD%A0%E7%9A%84%E4%B8%93%E5%B1%9E%E8%99%9A%E6%8B%9F%E8%81%8A%E5%A4%A9%E5%99%A8%E5%BA%94%E7%94%A8%22,%22start_url%22:%22index.html%22,%22display%22:%22fullscreen%22,%22background_color%22:%22%23ffffffff%22,%22theme_color%22:%22%23ffffffff%22}">
+    <link rel="manifest" href="data:application/json;charset=utf-8,%7B%22name%22%3A%22EVE%20Chat%22%2C%22short_name%22%3A%22EVE%20Chat%22%2C%22description%22%3A%22%E4%BD%A0%E7%9A%84%E4%B8%93%E5%B1%9E%E8%99%9A%E6%8B%9F%E8%81%8A%E5%A4%A9%E5%99%A8%E5%BA%94%E7%94%A8%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f5f5f7%22%2C%22theme_color%22%3A%22%23f5f5f7%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fi.postimg.cc%2FkGYP6CQw%2F6.png%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
     <link rel="shortcut icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
     <script src="https://unpkg.com/dexie@3.2.4/dist/dexie.js"></script>
@@ -21,9 +23,11 @@
         /* 🔥【关键修复】基础页面样式 - 确保手机显示正确 */
         html {
             height: 100%;
+	    width: 100%;
             overflow: hidden;
         }
         body {
+	    width: 100%;
             height: 100%;
             overflow: hidden;
             margin: 0;
@@ -36,6 +40,18 @@
             align-items: center;
             box-sizing: border-box;
         }
+/* 这一步是为了把聊天内容推下来，不被时间、电量图标挡住 */
+#chat-container {  /* 如果你的最外层 div ID 不叫这个，记得改成你自己的，比如 .main-wrapper */
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box; /* 这句必须加，否则 padding 会把页面撑爆 */
+    
+    /* 这就是那个文件的核心魔法： */
+    padding-top: env(safe-area-inset-top); 
+}
+#chat-container, .header {
+    padding-top: env(safe-area-inset-top);
+}
 
         /* --- 开场动画样式 --- */
         #eve-splash-screen {
