@@ -42,16 +42,17 @@
             box-sizing: border-box;
         }
 /* 这一步是为了把聊天内容推下来，不被时间、电量图标挡住 */
-#chat-container {  /* 如果你的最外层 div ID 不叫这个，记得改成你自己的，比如 .main-wrapper */
-    width: 100%;
-    height: 100%;
-    box-sizing: border-box; /* 这句必须加，否则 padding 会把页面撑爆 */
+#chat-container { /* 你的聊天记录容器 ID */
+    flex: 1; /* 核心代码：自动占据剩余的所有空间 */
+    overflow-y: auto; /* 只允许这里滚动 */
+    -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
     
-    /* 这就是那个文件的核心魔法： */
-    padding-top: env(safe-area-inset-top); 
+    width: 100%;
+    padding: 10px; /* 内部间距 */
 }
 #chat-container, .header {
     padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
         /* --- 开场动画样式 --- */
@@ -6340,7 +6341,7 @@
     right: 0;
     
     /* 关键修改：让顶部内边距 = 手机的安全距离（灵动岛高度） + 原本的一点空隙 */
-    padding-top: calc(env(safe-area-inset-top) + 10px); 
+    padding-top: calc(env(safe-area-inset-top) + 12px); 
     padding-bottom: 10px; /* 底部留点空隙 */
     
     /* 高度不要写死 60px 之类的，改成 auto，让 padding 撑开它 */
