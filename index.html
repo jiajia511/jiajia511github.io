@@ -28,7 +28,7 @@
         }
         body {
 	    width: 100%;
-            height: 100%;
+            height: 100dvh;
             overflow: hidden;
             margin: 0;
             padding: 4px;
@@ -36,6 +36,7 @@
             font-weight: normal;
             background-color: #dcdcdc;
             display: flex;
+	    flex-direction: column;
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
@@ -6333,25 +6334,27 @@
         }
 
         .header {
-            position: relative;
-            z-index: 15;
-            flex-shrink: 0;
-            padding: 12px 32px;
-            padding-top: 45px;
-            height: 80px;
-            box-sizing: border-box;
-            background-color: var(--theme-header-bg);
-            backdrop-filter: var(--theme-header-backdrop);
-            -webkit-backdrop-filter: var(--theme-header-backdrop);
-            border-bottom: 1px solid var(--theme-header-border, var(--color-border)); /* 🔥【修复】支持自定义主题边框色 */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 18px;
-            font-weight: 600;
-            transition: var(--transition-normal);
-            overflow: hidden;
-        }
+    position: fixed; /* 保持固定在顶部 */
+    top: 0;
+    left: 0;
+    right: 0;
+    
+    /* 关键修改：让顶部内边距 = 手机的安全距离（灵动岛高度） + 原本的一点空隙 */
+    padding-top: calc(env(safe-area-inset-top) + 10px); 
+    padding-bottom: 10px; /* 底部留点空隙 */
+    
+    /* 高度不要写死 60px 之类的，改成 auto，让 padding 撑开它 */
+    height: auto; 
+    
+    /* 确保背景色和文字颜色对 */
+    background-color: #f5f5f7; 
+    z-index: 1000; /* 保证它在最上面 */
+    
+    /* 加上 Flex 布局保证里面的按钮和标题垂直居中 */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 或者是 center，看你布局 */
+}
 
         /* 🔥【新增】专门为聊天界面的header容器添加状态显示支持 */
         #api-chat-screen .header {
