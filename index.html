@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -84,7 +83,8 @@
 
         #reader-view { background: var(--reader-bg); background-size: cover; background-position: center; position: relative; }
         .reader-content-wrapper { flex-grow: 1; overflow-y: auto; position: relative; -webkit-overflow-scrolling: touch; }
-        .reader-content { line-height: 1.8; font-size: var(--reader-font-size); text-align: justify; padding: 20px 35px; color: var(--reader-font-color); min-height: 100%; }
+        /* Increased bottom padding so content isn't hidden by the fixed status bar */
+        .reader-content { line-height: 1.8; font-size: var(--reader-font-size); text-align: justify; padding: 20px 35px 90px 35px; color: var(--reader-font-color); min-height: 100%; }
         .reader-content p { margin: 0 0 1em; position: relative; white-space: pre-wrap; }
         .upload-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--secondary-text-color); }
         .upload-placeholder svg { width: 50px; height: 50px; fill: #ccc; margin-bottom: 15px; }
@@ -256,10 +256,12 @@
         .nav-item .label { font-size: 12px; }
         .nav-item.active { color: var(--accent-color); }
         
+        /* Revised Reader Progress/Status Bar Styles */
         .reader-progress-container {
             position: fixed;
-            bottom: 60px;
-            left: 0;
+            bottom: 60px; /* Aligned above the nav bar */
+            left: 50%; /* Center horizontally */
+            transform: translateX(-50%); /* Correct centering */
             width: 100%;
             z-index: 100;
             pointer-events: none;
@@ -281,7 +283,7 @@
         }
         
         .reader-status-bar {
-            position: absolute;
+            position: absolute; /* Relative to container */
             bottom: 3px;
             left: 0;
             width: 100%;
@@ -293,16 +295,12 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 -1px 3px var(--shadow-light);
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            transform: translateY(100%);
-            opacity: 0;
+            /* Removed transition/opacity logic to keep it fixed */
             pointer-events: auto;
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
         
-        .reader-status-bar.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
+        /* Removed .reader-status-bar.show logic, default is visible */
         
         .reader-status-bar .chapter-info {
             flex: 1;
@@ -630,8 +628,6 @@
                 lastCommentTime: 0,
                 lastScrollTop: 0,
                 scrollTimeout: null,
-                statusBarTimeout: null,
-                isStatusBarVisible: false,
             },
             longPressTimer: null,
             selection: {
@@ -656,7 +652,6 @@
                 dom.chapterInfo.textContent = '未选择书籍';
                 dom.progressInfo.textContent = '0%';
                 dom.readerProgressFill.style.width = '0%';
-                hideStatusBar();
                 return;
             }
 
@@ -678,30 +673,13 @@
             }
             activeBook.currentChapter = currentChapterTitle;
             dom.chapterInfo.textContent = currentChapterTitle;
-            
-            showStatusBar();
         };
 
-        const showStatusBar = () => {
-            if (state.reading.isStatusBarVisible) return;
-            dom.readerStatusBar.classList.add('show');
-            state.reading.isStatusBarVisible = true;
-            clearTimeout(state.reading.statusBarTimeout);
-            state.reading.statusBarTimeout = setTimeout(() => {
-                hideStatusBar();
-            }, 3000);
-        };
-
-        const hideStatusBar = () => {
-            if (!state.reading.isStatusBarVisible) return;
-            dom.readerStatusBar.classList.remove('show');
-            state.reading.isStatusBarVisible = false;
-        };
-
+        // Removed logic for showing/hiding status bar - it is now always visible
+        
         const switchView = async (viewId) => {
             if (document.querySelector('.view.active')?.id === 'reader-view' && viewId !== 'reader-view') {
                 await saveCurrentBookProgress();
-                hideStatusBar();
             }
             dom.views.forEach(v => v.classList.remove('active'));
             document.getElementById(viewId).classList.add('active');
@@ -1658,10 +1636,13 @@
                 const summaryText = bookSummaries[chapter.title] || '';
                 const item = document.createElement('div');
                 item.className = 'summary-item';
+                // Using template literal for structure but setting value programmatically to avoid HTML injection issues
                 item.innerHTML = `
                     <label>${chapter.title} <button class="ai-gen-btn" data-chapter-title="${chapter.title}" data-para-index="${chapter.paraIndex}">AI生成</button></label>
-                    <textarea data-chapter-title="${chapter.title}" placeholder="输入本章摘要...">${summaryText}</textarea>
+                    <textarea data-chapter-title="${chapter.title}" placeholder="输入本章摘要..."></textarea>
                 `;
+                // Set value safely
+                item.querySelector('textarea').value = summaryText;
                 dom.summaryList.appendChild(item);
             });
             dom.autoSummaryToggle.checked = state.settings.reading.autoGenerateSummaries;
@@ -1739,7 +1720,8 @@
             const endParaIndex = nextChapter ? nextChapter.paraIndex : activeBook.paragraphs.length;
             const chapterText = activeBook.paragraphs.slice(paraIndex, endParaIndex).join('\n').substring(0, 3000);
 
-            const userMessage = `请为以下书籍《${bookTitle}》中"${chapterTitle}"章节的内容，生成一个50字以内的精简摘要：\n\n${chapterText}`;
+            // Updated Prompt to request ~500 words
+            const userMessage = `请为以下书籍《${bookTitle}》中"${chapterTitle}"章节的内容，生成一个详细的摘要，字数大约500字左右：\n\n${chapterText}`;
             
             const { content: summary, error } = await callAIApi([{ role: 'system', content: '你是一个擅长文本摘要的助手。' }, { role: 'user', content: userMessage }], 'summary');
 
@@ -1757,6 +1739,8 @@
                 if (textarea) textarea.value = summary;
                 if (!state.summaries[bookTitle]) state.summaries[bookTitle] = {};
                 state.summaries[bookTitle][chapterTitle] = summary;
+                // Auto-save generated summary to storage immediately
+                await localforage.setItem('readingCompanionSummaries', state.summaries);
             }
 
             if (btn) {
@@ -1989,13 +1973,7 @@
         
         dom.readerContentWrapper.addEventListener('scroll', handleReaderScroll);
         
-        dom.readerStatusBar.addEventListener('click', () => {
-            if (state.reading.isStatusBarVisible) {
-                hideStatusBar();
-            } else {
-                showStatusBar();
-            }
-        });
+        // Removed readerStatusBar click event as it's now always visible
         
         document.addEventListener('click', (e) => {
             if (!e.target.closest('.comment-popup') && !e.target.closest('.comment-icon')) {
